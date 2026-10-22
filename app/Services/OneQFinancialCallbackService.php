@@ -55,7 +55,7 @@ class OneQFinancialCallbackService
                     'updated_at' => now(),
                 ]);
             } catch (Throwable) {
-                return response()->json(['accepted' => false, 'error_code' => 'NONCE_REPLAYED'], 409);
+                return response()->json(['accepted' => false, 'error_code' => 'NONCE_REPLAYED'], 401);
             }
 
             [$status, $body] = DB::transaction(function () use ($payload, $idempotencyKey): array {
@@ -143,7 +143,7 @@ class OneQFinancialCallbackService
 
         if ($type === 'BET') {
             $changeBucket = $this->debit($wallet, $amount);
-            if ($changeBucket === null) return [409, ['accepted' => false, 'error_code' => 'INSUFFICIENT_FUNDS']];
+            if ($changeBucket === null) return [422, ['accepted' => false, 'error_code' => 'INSUFFICIENT_FUNDS']];
             $this->createOrder($user->id, $transactionId, $gameCode, $roundId, 'bet', $amount, $changeBucket, false);
             Helper::payWithRollover($user->id, $changeBucket, 0, $amount, 'bet');
             Helper::generateGameHistory($user->id, 'bet', 0, $amount, $changeBucket, $transactionId);
@@ -158,7 +158,7 @@ class OneQFinancialCallbackService
                 ->where(function ($query) use ($transactionId, $roundId) {
                     $query->where('transaction_id', $transactionId)->orWhere('round_id', $roundId);
                 })->lockForUpdate()->first();
-            if (!$original) return [409, ['accepted' => false, 'error_code' => 'REFUND_TRANSACTION_NOT_FOUND']];
+            if (!$original) return [422, ['accepted' => false, 'error_code' => 'REFUND_TRANSACTION_NOT_FOUND']];
             $this->credit($wallet, $amount);
             $original->update(['refunded' => true]);
             $this->createOrder($user->id, $transactionId, $gameCode, $roundId, 'win', $amount, $changeBucket, true);
