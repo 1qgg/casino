@@ -29,7 +29,7 @@ class OneQGamesClient
             $query = array_filter([
                 'provider' => $filters['provider'] ?? null,
                 'search' => $filters['search'] ?? null,
-                                'page' => $page,
+                'page' => $page,
                 'per_page' => 100,
             ], static fn ($value) => $value !== null && $value !== '');
 
