@@ -64,6 +64,7 @@ class OneQFinancialCallbackService
                     'idempotency_key' => $idempotencyKey,
                     'payload_hash' => $payloadHash,
                     'status' => 'processing',
+                    'response_status' => null,
                     'response' => null,
                     'created_at' => now(),
                     'updated_at' => now(),
@@ -74,7 +75,7 @@ class OneQFinancialCallbackService
                     return [409, ['accepted' => false, 'error_code' => 'IDEMPOTENCY_CONFLICT']];
                 }
                 if ($record->status === 'completed' && is_string($record->response)) {
-                    return [200, json_decode($record->response, true) ?: ['accepted' => false, 'error_code' => 'STORED_RESPONSE_INVALID']];
+                    return [(int) ($record->response_status ?: 200), json_decode($record->response, true) ?: ['accepted' => false, 'error_code' => 'STORED_RESPONSE_INVALID']];
                 }
 
                 $result = $this->process($payload);
@@ -82,6 +83,7 @@ class OneQFinancialCallbackService
                 $body = $result[1];
                 DB::table('oneq_callback_requests')->where('idempotency_key', $idempotencyKey)->update([
                     'status' => 'completed',
+                    'response_status' => $status,
                     'response' => json_encode($body, JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR),
                     'updated_at' => now(),
                 ]);
