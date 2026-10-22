@@ -62,7 +62,13 @@ class BannerResource extends Resource
                                 ->columnSpanFull(),
                         ])->columns(2),
                         Forms\Components\FileUpload::make('image')
+                            ->label('Imagem')
                             ->image()
+                            ->acceptedFileTypes(['image/*'])
+                            ->maxSize(512000)
+                            ->disk('public')
+                            ->directory('banners')
+                            ->visibility('public')
                             ->required(),
                     ])
             ]);
@@ -77,7 +83,8 @@ class BannerResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\ImageColumn::make('image')
-                    ->label('Imagem'),
+                    ->label('Imagem')
+                    ->disk('public'),
                 Tables\Columns\TextColumn::make('link')
                     ->label('Link')
                     ->searchable(),

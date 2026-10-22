@@ -111,6 +111,11 @@ class GameResource extends Resource
                             ->label('Capa')
                             ->placeholder('Carregue a capa do jogo')
                             ->image()
+                            ->acceptedFileTypes(['image/*'])
+                            ->maxSize(512000)
+                            ->disk('public')
+                            ->directory('games/covers')
+                            ->visibility('public')
                             ->columnSpanFull()
                             ->helperText('Tamanho recomendado para a capa é de 300x350')
                             ->required(),
@@ -149,6 +154,7 @@ class GameResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('cover')
                 ->label('Capa')
+                ->disk('public')
                 //->disk('media')
                 ,
                 Tables\Columns\TextColumn::make('provider.name')

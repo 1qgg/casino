@@ -54,7 +54,12 @@ class CategoryResource extends Resource
                         ->maxLength(191),
                     Forms\Components\FileUpload::make('image')
                         ->label('Capa')
-                        ->image(),
+                        ->image()
+                        ->acceptedFileTypes(['image/*'])
+                        ->maxSize(512000)
+                        ->disk('public')
+                        ->directory('categories')
+                        ->visibility('public'),
                     Forms\Components\TextInput::make('slug')
                         ->maxLength(191),
                 ])->columns(2)
@@ -73,7 +78,8 @@ class CategoryResource extends Resource
                     ->limit(70)
                     ->searchable(),
                 Tables\Columns\ImageColumn::make('image')
-                    ->label('Imagem'),
+                    ->label('Imagem')
+                    ->disk('public'),
                 Tables\Columns\TextColumn::make('slug')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
