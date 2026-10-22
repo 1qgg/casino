@@ -261,7 +261,7 @@ class GameController extends Controller
             $catalog = (new OneQGamesClient($settings))->catalog($filters);
 
             return response()->json(['data' => $catalog]);
-        } catch (\\Throwable $exception) {
+        } catch (\Throwable $exception) {
             report($exception);
             return response()->json([
                 'status' => false,
