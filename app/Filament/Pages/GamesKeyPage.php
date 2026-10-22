@@ -38,7 +38,6 @@ class GamesKeyPage extends Page implements HasForms
         $values = $this->setting?->toArray() ?? [];
         $values['oneq_operator_secret'] = '';
         $values['oneq_callback_secret'] = '';
-        $values['oneq_callback_key'] = $this->setting?->oneq_callback_key ?? '';
         $values['oneq_callback_url'] = url('/api/oneq/callback');
         $values['oneq_api_base'] = 'https://api.1q.gg';
         $this->form->fill($values);
@@ -61,10 +60,6 @@ class GamesKeyPage extends Page implements HasForms
                             ->revealable()
                             ->dehydrated(fn ($state) => filled($state))
                             ->helperText('Deixe em branco para manter a credencial já salva.'),
-                        TextInput::make('oneq_callback_key')
-                            ->label('Callback Project Key (X-1Q-Key)')
-                            ->required()
-                            ->maxLength(191),
                         TextInput::make('oneq_callback_secret')
                             ->label('Callback Secret')
                             ->password()
