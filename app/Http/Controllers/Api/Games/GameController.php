@@ -269,7 +269,7 @@ class GameController extends Controller
         }
     }
 
-    public function webhookOneQ(Request $request, \\App\\Services\\OneQFinancialCallbackService $callbacks)
+    public function webhookOneQ(Request $request, \App\Services\OneQFinancialCallbackService $callbacks)
     {
         return $callbacks->handle($request);
     }
