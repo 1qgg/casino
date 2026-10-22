@@ -20,13 +20,15 @@ RUN apt-get update \
 # O Apache deve publicar somente a pasta public do Laravel.
 RUN sed -ri 's!/var/www/html!/var/www/html/public!g' \
         /etc/apache2/sites-available/000-default.conf \
-    && printf '%s\n' \
-        '<Directory /var/www/html/public>' \
-        '    AllowOverride All' \
-        '    Require all granted' \
-        '</Directory>' \
-        > /etc/apache2/conf-available/laravel.conf \
     && a2enconf laravel
+
+# Cria a configuração com quebras de linha reais, sem printf/escaping.
+RUN cat > /etc/apache2/conf-available/laravel.conf <<'APACHECONF'
+<Directory /var/www/html/public>
+    AllowOverride All
+    Require all granted
+</Directory>
+APACHECONF
 
 WORKDIR /var/www/html
 
