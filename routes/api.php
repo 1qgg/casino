@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 
 include_once(__DIR__ . '/groups/provider/oneQ.php');
 
-Route::middleware('auth.jwt')->get('/oneq/catalog', [\\App\\Http\\Controllers\\Api\\Games\\GameController::class, 'oneQCatalog']);
+Route::middleware('auth.jwt')->get('/oneq/catalog', [\App\Http\Controllers\Api\Games\GameController::class, 'oneQCatalog']);
 
 /*
 |--------------------------------------------------------------------------
