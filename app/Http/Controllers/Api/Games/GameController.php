@@ -248,6 +248,28 @@ class GameController extends Controller
 
 
 
+    public function oneQCatalog(Request $request)
+    {
+        $user = auth('api')->user();
+        if (!$user || !$user->hasRole('admin')) {
+            return response()->json(['status' => false, 'error' => 'Não autorizado.'], 403);
+        }
+
+        try {
+            $settings = GamesKey::query()->firstOrFail();
+            $filters = $request->only(['provider', 'search', 'status', 'availability', 'launchable']);
+            $catalog = (new OneQGamesClient($settings))->catalog($filters);
+
+            return response()->json(['data' => $catalog]);
+        } catch (\\Throwable $exception) {
+            report($exception);
+            return response()->json([
+                'status' => false,
+                'error' => 'Não foi possível consultar o catálogo 1Q. Verifique as credenciais.',
+            ], 502);
+        }
+    }
+
     public function webhookOneQ(Request $request)
     {
         // Fail closed: the public Games API documentation does not define the
