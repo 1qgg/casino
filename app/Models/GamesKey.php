@@ -29,11 +29,24 @@ class GamesKey extends Model
         'playfiver_rtp',
         'playfiver_secret',
         'playfiver_code',
-        'playfiver_token'
+        'playfiver_token',
+        'oneq_operator_key',
+        'oneq_operator_secret',
+        'oneq_callback_secret',
+        'oneq_callback_key'
 
     ];
 
-    protected $hidden = array('updated_at');
+    protected $hidden = [
+        'updated_at',
+        'oneq_operator_secret',
+        'oneq_callback_secret',
+    ];
+
+    protected $casts = [
+        'oneq_operator_secret' => 'encrypted',
+        'oneq_callback_secret' => 'encrypted',
+    ];
 
     /**
      * Get the user's first name.

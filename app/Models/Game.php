@@ -35,7 +35,10 @@ class Game extends Model
         'status',
         'views',
         'is_featured',
-        'show_home'
+        'show_home',
+        'distribution',
+        'oneq_provider',
+        'oneq_game'
     ];
 
     protected $appends = ['hasFavorite', 'totalFavorites', 'hasLike', 'totalLikes', 'dateHumanReadable', 'createdAt' ];

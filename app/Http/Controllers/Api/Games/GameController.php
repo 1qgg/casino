@@ -10,14 +10,15 @@ use App\Models\GamesKey;
 use App\Models\Gateway;
 use App\Models\Provider;
 use App\Models\Wallet;
-use App\Traits\Providers\PlayFiverTrait;
+use App\Services\OneQGamesClient;
+use Illuminate\Support\Str;
 
 
 use Illuminate\Http\Request;
 
 class GameController extends Controller
 {
-    use PlayFiverTrait;
+
 
     /**
      * @dev victormsalatiel
@@ -157,13 +158,55 @@ class GameController extends Controller
             $game->increment('views');
 
             switch ($game->distribution) {
+                case 'oneq':
+                    if (blank($game->oneq_provider) || blank($game->oneq_game)) {
+                        return response()->json([
+                            'status' => false,
+                            'error' => 'Este jogo ainda não está mapeado para o catálogo 1Q.',
+                        ], 422);
+                    }
+
+                    $user = auth('api')->user();
+                    if (!$user || !$wallet) {
+                        return response()->json(['status' => false, 'error' => 'Autenticação necessária.'], 401);
+                    }
+
+                    try {
+                        $settings = GamesKey::query()->firstOrFail();
+                        $client = new OneQGamesClient($settings);
+                        $response = $client->launch([
+                            'user_code' => (string) $user->email,
+                            'game_code' => (string) $game->oneq_game,
+                            'provider' => (string) $game->oneq_provider,
+                            'game_original' => true,
+                            'user_balance' => number_format((float) $wallet->total_balance, 4, '.', ''),
+                            'currency' => strtoupper((string) ($wallet->currency ?: 'BRL')),
+                            'lang' => str_replace('_', '-', app()->getLocale() ?: 'pt-BR'),
+                            'return_url' => url('/'),
+                        ], (string) Str::uuid());
+
+                        $launchUrl = data_get($response, 'data.launch_url');
+                        if (!is_string($launchUrl) || !filter_var($launchUrl, FILTER_VALIDATE_URL)) {
+                            return response()->json(['status' => false, 'error' => 'A API 1Q não retornou uma URL de lançamento válida.'], 502);
+                        }
+
+                        return response()->json([
+                            'game' => $game,
+                            'gameUrl' => $launchUrl,
+                            'token' => $token,
+                        ]);
+                    } catch (\Throwable $exception) {
+                        report($exception);
+                        return response()->json([
+                            'status' => false,
+                            'error' => 'Não foi possível abrir o jogo pela 1Q. Verifique as credenciais e tente novamente.',
+                        ], 502);
+                    }
                 case 'play_fiver':
-                    $playfiver = self::playFiverLaunch($game->game_id, $game->only_demo);
                     return response()->json([
-                        'game' => $game,
-                        'gameUrl' => $playfiver['launch_url'],
-                        'token' => $token
-                    ]);
+                        'status' => false,
+                        'error' => 'A integração PlayFiver foi substituída pela 1Q. Atualize o mapeamento deste jogo.',
+                    ], 410);
             }
         }
         return response()->json(['error' => '', 'status' => false], 400);
@@ -204,9 +247,31 @@ class GameController extends Controller
 
 
 
-    public function webhookPlayFiver(Request $request)
+    public function oneQCatalog(Request $request)
     {
-        return self::webhookPlayFiverAPI($request);
+        $user = auth('api')->user();
+        if (!$user || !$user->hasRole('admin')) {
+            return response()->json(['status' => false, 'error' => 'Não autorizado.'], 403);
+        }
+
+        try {
+            $settings = GamesKey::query()->firstOrFail();
+            $filters = $request->only(['provider', 'search']);
+            $catalog = (new OneQGamesClient($settings))->catalog($filters);
+
+            return response()->json(['data' => $catalog]);
+        } catch (\Throwable $exception) {
+            report($exception);
+            return response()->json([
+                'status' => false,
+                'error' => 'Não foi possível consultar o catálogo 1Q. Verifique as credenciais.',
+            ], 502);
+        }
+    }
+
+    public function webhookOneQ(Request $request, \App\Services\OneQFinancialCallbackService $callbacks)
+    {
+        return $callbacks->handle($request);
     }
 
 
