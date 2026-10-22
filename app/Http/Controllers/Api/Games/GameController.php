@@ -10,7 +10,8 @@ use App\Models\GamesKey;
 use App\Models\Gateway;
 use App\Models\Provider;
 use App\Models\Wallet;
-use App\Traits\Providers\PlayFiverTrait;
+use App\Services\OneQGamesClient;
+use Illuminate\Support\Str;
 
 
 use Illuminate\Http\Request;
