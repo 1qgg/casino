@@ -183,7 +183,6 @@ class GameController extends Controller
                             'currency' => strtoupper((string) ($wallet->currency ?: 'BRL')),
                             'lang' => str_replace('_', '-', app()->getLocale() ?: 'pt-BR'),
                             'return_url' => url('/'),
-                            'product_type' => 'casino',
                         ], (string) Str::uuid());
 
                         $launchUrl = data_get($response, 'data.launch_url');
@@ -257,7 +256,7 @@ class GameController extends Controller
 
         try {
             $settings = GamesKey::query()->firstOrFail();
-            $filters = $request->only(['provider', 'search', 'status', 'availability', 'launchable']);
+            $filters = $request->only(['provider', 'search']);
             $catalog = (new OneQGamesClient($settings))->catalog($filters);
 
             return response()->json(['data' => $catalog]);
