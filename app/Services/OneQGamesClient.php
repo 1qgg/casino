@@ -29,10 +29,7 @@ class OneQGamesClient
             $query = array_filter([
                 'provider' => $filters['provider'] ?? null,
                 'search' => $filters['search'] ?? null,
-                'status' => $filters['status'] ?? null,
-                'availability' => $filters['availability'] ?? null,
-                'launchable' => $filters['launchable'] ?? null,
-                'page' => $page,
+                                'page' => $page,
                 'per_page' => 100,
             ], static fn ($value) => $value !== null && $value !== '');
 
@@ -42,7 +39,7 @@ class OneQGamesClient
                 throw new RuntimeException('Resposta inválida do catálogo 1Q.');
             }
             array_push($results, ...$data);
-            $lastPage = (int) ($response['meta']['last_page'] ?? $response['meta']['pagination']['last_page'] ?? $page);
+            $lastPage = (int) ($response['pagination']['last_page'] ?? $response['meta']['pagination']['last_page'] ?? $page);
             $page++;
         } while ($page <= max(1, $lastPage));
 
