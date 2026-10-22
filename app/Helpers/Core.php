@@ -270,7 +270,8 @@ class Core
     public static function getDistribution(): array
     {
         return [
-            'play_fiver' => 'Play Fiver'
+            'play_fiver' => 'Play Fiver',
+            'oneq' => '1Q Games'
         ];
     }
 
