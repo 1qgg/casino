@@ -33,15 +33,15 @@ RUN a2enconf laravel
 
 # Filament/Livewire uploads arrive as multipart requests. Keep PHP limits above
 # the application upload limit so large images are not silently rejected.
-RUN printf '%s\\n' \\
-    'file_uploads=On' \\
-    'upload_max_filesize=512M' \\
-    'post_max_size=520M' \\
-    'max_file_uploads=100' \\
-    'max_execution_time=300' \\
-    'max_input_time=300' \\
-    'memory_limit=768M' \\
-    > /usr/local/etc/php/conf.d/uploads.ini
+RUN cat > /usr/local/etc/php/conf.d/uploads.ini <<'PHPINI'
+file_uploads=On
+upload_max_filesize=512M
+post_max_size=520M
+max_file_uploads=100
+max_execution_time=300
+max_input_time=300
+memory_limit=768M
+PHPINI
 
 WORKDIR /var/www/html
 
