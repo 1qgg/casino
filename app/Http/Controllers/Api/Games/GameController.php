@@ -270,15 +270,9 @@ class GameController extends Controller
         }
     }
 
-    public function webhookOneQ(Request $request)
+    public function webhookOneQ(Request $request, \\App\\Services\\OneQFinancialCallbackService $callbacks)
     {
-        // Fail closed: the public Games API documentation does not define the
-        // project's wallet callback contract, signature headers, or transaction semantics.
-        // Never change a balance until that contract is explicitly configured and verified.
-        return response()->json([
-            'status' => false,
-            'error' => 'Contrato financeiro de callback não habilitado para esta integração.',
-        ], 503);
+        return $callbacks->handle($request);
     }
 
 
