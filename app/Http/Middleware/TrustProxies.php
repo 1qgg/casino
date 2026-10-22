@@ -12,7 +12,11 @@ class TrustProxies extends Middleware
      *
      * @var array<int, string>|string|null
      */
-    protected $proxies;
+    // Coolify terminates public HTTPS at its reverse proxy (Traefik).
+    // Trust forwarded headers so Laravel sees the original HTTPS scheme and
+    // host when validating Livewire's temporary signed upload URLs.
+    // Keep the app reachable only through Coolify's proxy when using '*'.
+    protected $proxies = '*';
 
     /**
      * The headers that should be used to detect proxies.
