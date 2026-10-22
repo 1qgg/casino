@@ -78,7 +78,8 @@ class CategoryResource extends Resource
                     ->limit(70)
                     ->searchable(),
                 Tables\Columns\ImageColumn::make('image')
-                    ->label('Imagem'),
+                    ->label('Imagem')
+                    ->disk('public'),
                 Tables\Columns\TextColumn::make('slug')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
