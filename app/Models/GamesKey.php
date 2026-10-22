@@ -32,7 +32,8 @@ class GamesKey extends Model
         'playfiver_token',
         'oneq_operator_key',
         'oneq_operator_secret',
-        'oneq_callback_secret'
+        'oneq_callback_secret',
+        'oneq_callback_key'
 
     ];
 
