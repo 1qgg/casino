@@ -68,6 +68,11 @@ class GameResource extends Resource
                             ->live()
                             ->columnSpanFull()
                         ,
+                        Forms\Components\Select::make('distribution')
+                            ->label('Integração')
+                            ->options(\Helper::getDistribution())
+                            ->required()
+                            ->live(),
                         Forms\Components\TextInput::make('game_name')
                             ->label('Nome do Jogo')
                             ->placeholder('Digite o nome do jogo')
@@ -90,6 +95,16 @@ class GameResource extends Resource
                                 ->label('Tipo do Jogo')
                                 ->required()
                                 ->maxLength(191),
+                        Forms\Components\TextInput::make('oneq_provider')
+                                ->label('1Q Provider')
+                                ->placeholder('Provider retornado pelo catálogo 1Q')
+                                ->maxLength(191)
+                                ->visible(fn ($get) => $get('distribution') === 'oneq'),
+                        Forms\Components\TextInput::make('oneq_game')
+                                ->label('1Q Game')
+                                ->placeholder('Game retornado pelo catálogo 1Q')
+                                ->maxLength(191)
+                                ->visible(fn ($get) => $get('distribution') === 'oneq'),
                         ])->columns(3),
                         
                         Forms\Components\FileUpload::make('cover')
