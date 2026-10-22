@@ -5,6 +5,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Broadcast;
 use Illuminate\Support\Facades\Route;
 
+include_once(__DIR__ . '/groups/provider/oneQ.php');
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
