@@ -36,7 +36,16 @@ class GamesKey extends Model
 
     ];
 
-    protected $hidden = array('updated_at');
+    protected $hidden = [
+        'updated_at',
+        'oneq_operator_secret',
+        'oneq_callback_secret',
+    ];
+
+    protected $casts = [
+        'oneq_operator_secret' => 'encrypted',
+        'oneq_callback_secret' => 'encrypted',
+    ];
 
     /**
      * Get the user's first name.
