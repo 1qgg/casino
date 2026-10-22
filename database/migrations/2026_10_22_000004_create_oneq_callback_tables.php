@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('idempotency_key', 128)->unique();
             $table->char('payload_hash', 64);
             $table->string('status', 24)->default('processing');
+            $table->unsignedSmallInteger('response_status')->nullable();
             $table->json('response')->nullable();
             $table->timestamps();
         });
