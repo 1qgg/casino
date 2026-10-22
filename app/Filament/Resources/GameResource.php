@@ -154,6 +154,7 @@ class GameResource extends Resource
             ->columns([
                 Tables\Columns\ImageColumn::make('cover')
                 ->label('Capa')
+                ->disk('public')
                 //->disk('media')
                 ,
                 Tables\Columns\TextColumn::make('provider.name')
