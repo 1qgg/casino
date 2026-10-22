@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Filament\Pages;
-use Illuminate\Support\HtmlString;
+
 use App\Models\GamesKey;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
@@ -17,62 +17,59 @@ class GamesKeyPage extends Page implements HasForms
     use InteractsWithForms;
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
-
     protected static string $view = 'filament.pages.games-key-page';
-
     protected static ?string $title = 'Provedor de Jogos';
 
     public static function canAccess(): bool
     {
-        return auth()->user()->hasRole('admin');
+        return auth()->user()?->hasRole('admin') ?? false;
     }
 
     public ?array $data = [];
-    public ?GamesKey $setting;
+    public ?GamesKey $setting = null;
 
     public function mount(): void
     {
-        $gamesKey = GamesKey::first();
-        if (!empty($gamesKey)) {
-            $this->setting = $gamesKey;
-            $this->form->fill($this->setting->toArray());
-        } else {
-            $this->form->fill();
-        }
+        $this->setting = GamesKey::query()->first();
+        $values = $this->setting?->toArray() ?? [];
+        $values['oneq_operator_secret'] = '';
+        $values['oneq_callback_secret'] = '';
+        $values['oneq_callback_url'] = url('/oneq/callback');
+        $values['oneq_api_base'] = 'https://api.1q.gg';
+        $this->form->fill($values);
     }
 
     public function form(Form $form): Form
     {
         return $form
             ->schema([
-                Section::make('API PlayFiver')
-                    ->description(new HtmlString('
-                        <div style="display: flex; align-items: center;">
-                          
-                        </div>
-                    '))
+                Section::make('Conexão 1Q Games')
+                    ->description('Credenciais usadas para consultar o catálogo e abrir sessões. A URL base da API é fixa.')
                     ->schema([
-          //              TextInput::make('playfiver_url')
-           //                 ->label('URL')
-           //                 ->placeholder('Digite aqui a URL')
-        //                    ->maxLength(191),
-                        TextInput::make('playfiver_secret')
-                            ->label('Agent Secret')
-                            ->placeholder('Digite aqui o código secreto do agente')
+                        TextInput::make('oneq_operator_key')
+                            ->label('Operator Key')
+                            ->required()
                             ->maxLength(191),
-                        TextInput::make('playfiver_code')
-                            ->label('Agent Code')
-                            ->placeholder('Digite aqui o código do agente')
-                            ->maxLength(191),
-                        TextInput::make('playfiver_token')
-                            ->label('Agent Token')
-                            ->placeholder('Digite aqui o token do agente')
-                            ->maxLength(191),
-                        TextInput::make('playfiver_rtp')
-                            ->label('RTP dos usuário 10 a 95')
-                            ->placeholder('Digite aqui RTP dos usuário de 10 a 99 Padrão 50')
-                            ->maxLength(2)
-                            ->rules(['required', 'integer', 'between:10,97', 'regex:/^\d+$/']),
+                        TextInput::make('oneq_operator_secret')
+                            ->label('Operator Secret')
+                            ->password()
+                            ->revealable()
+                            ->dehydrated(fn ($state) => filled($state))
+                            ->helperText('Deixe em branco para manter a credencial já salva.'),
+                        TextInput::make('oneq_callback_secret')
+                            ->label('Callback Secret')
+                            ->password()
+                            ->revealable()
+                            ->dehydrated(fn ($state) => filled($state))
+                            ->helperText('Deixe em branco para manter a credencial já salva.'),
+                        TextInput::make('oneq_callback_url')
+                            ->label('URL de callback')
+                            ->disabled()
+                            ->dehydrated(false),
+                        TextInput::make('oneq_api_base')
+                            ->label('API base')
+                            ->disabled()
+                            ->dehydrated(false),
                     ])->columns(2),
             ])
             ->statePath('data');
@@ -82,38 +79,36 @@ class GamesKeyPage extends Page implements HasForms
     {
         try {
             if (env('APP_DEMO')) {
-                Notification::make()
-                    ->title('Atenção')
+                Notification::make()->title('Atenção')
                     ->body('Você não pode realizar esta alteração na versão demo')
-                    ->danger()
-                    ->send();
+                    ->danger()->send();
                 return;
             }
 
-            $setting = GamesKey::first();
-            if (!empty($setting)) {
-                if ($setting->update($this->data)) {
-                    Notification::make()
-                        ->title('Chaves Alteradas')
-                        ->body('Suas chaves foram alteradas com sucesso!')
-                        ->success()
-                        ->send();
-                }
-            } else {
-                if (GamesKey::create($this->data)) {
-                    Notification::make()
-                        ->title('Chaves Criadas')
-                        ->body('Suas chaves foram criadas com sucesso!')
-                        ->success()
-                        ->send();
+            $data = $this->form->getState();
+            unset($data['oneq_callback_url'], $data['oneq_api_base']);
+            foreach (['oneq_operator_secret', 'oneq_callback_secret'] as $secret) {
+                if (blank($data[$secret] ?? null)) {
+                    unset($data[$secret]);
                 }
             }
+
+            $setting = GamesKey::query()->first();
+            if ($setting) {
+                $setting->update($data);
+            } else {
+                GamesKey::query()->create($data);
+            }
+
+            Notification::make()->title('Credenciais salvas')
+                ->body('As configurações da 1Q foram atualizadas.')
+                ->success()->send();
+
+            $this->mount();
         } catch (Halt $exception) {
-            Notification::make()
-                ->title('Erro ao alterar dados!')
-                ->body('Erro ao alterar dados!')
-                ->danger()
-                ->send();
+            Notification::make()->title('Erro ao salvar credenciais')
+                ->body('Não foi possível atualizar as configurações.')
+                ->danger()->send();
         }
     }
 }
