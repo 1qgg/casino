@@ -19,7 +19,7 @@ Route::get('clear', function() {
 });
 
 
-include_once(__DIR__ . '/groups/provider/playFiver.php');
+include_once(__DIR__ . '/groups/provider/oneQ.php');
 include_once(__DIR__ . '/groups/gateways/suitpay.php');
 include_once(__DIR__ . '/groups/auth/social.php');
 include_once(__DIR__ . '/groups/layouts/app.php');
