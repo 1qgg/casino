@@ -17,7 +17,7 @@ class OneQFinancialCallbackService
     public function handle(Request $request): JsonResponse
     {
         $settings = GamesKey::query()->first();
-        if (!$settings || blank($settings->oneq_callback_key) || blank($settings->oneq_callback_secret)) {
+        if (!$settings || blank($settings->oneq_callback_secret)) {
             return response()->json(['accepted' => false, 'error_code' => 'CALLBACK_NOT_CONFIGURED'], 503);
         }
 
@@ -28,7 +28,7 @@ class OneQFinancialCallbackService
         $idempotencyKey = trim((string) $request->header('X-1Q-Idempotency-Key'));
         $payload = $request->json()->all();
 
-        if (!hash_equals((string) $settings->oneq_callback_key, $key)
+        if ($key === ''
             || !ctype_digit($timestamp)
             || abs(time() - (int) $timestamp) > 300
             || $nonce === '' || strlen($nonce) > 128
