@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Models\GamesKey;
+use App\Services\OneQGamesClient;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Concerns\InteractsWithForms;
@@ -27,6 +28,9 @@ class GamesKeyPage extends Page implements HasForms
 
     public ?array $data = [];
     public ?GamesKey $setting = null;
+    public array $catalogResults = [];
+    public string $catalogSearch = '';
+    public ?string $catalogError = null;
 
     public function mount(): void
     {
@@ -78,6 +82,21 @@ class GamesKeyPage extends Page implements HasForms
                     ])->columns(2),
             ])
             ->statePath('data');
+    }
+
+    public function refreshCatalog(): void
+    {
+        try {
+            $settings = GamesKey::query()->firstOrFail();
+            $this->catalogResults = (new OneQGamesClient($settings))->catalog([
+                'search' => trim($this->catalogSearch),
+            ]);
+            $this->catalogError = null;
+        } catch (\Throwable $exception) {
+            report($exception);
+            $this->catalogResults = [];
+            $this->catalogError = 'Não foi possível carregar o catálogo. Confira as credenciais e a conexão com a API 1Q.';
+        }
     }
 
     public function submit(): void
