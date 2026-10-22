@@ -83,7 +83,8 @@ class BannerResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\ImageColumn::make('image')
-                    ->label('Imagem'),
+                    ->label('Imagem')
+                    ->disk('public'),
                 Tables\Columns\TextColumn::make('link')
                     ->label('Link')
                     ->searchable(),
