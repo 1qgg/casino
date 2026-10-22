@@ -1,21 +1,41 @@
-FROM php:8.1-apache
+FROM php:8.2-apache
 
-# Extensões exigidas pelo composer.json; não instala dependências via Composer
-# e não executa Node/npm nem compila os assets do frontend.
+# Configura apenas o runtime PHP/Apache. Não executa Composer, npm, Artisan,
+# migrations, seeders nem comandos para compilar o aplicativo Laravel.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libcurl4-openssl-dev libicu-dev libzip-dev \
-    && docker-php-ext-install curl intl pdo_mysql zip \
+    && apt-get install -y --no-install-recommends \
+        libcurl4-openssl-dev \
+        libicu-dev \
+        libzip-dev \
+        libonig-dev \
+    && docker-php-ext-install \
+        curl \
+        intl \
+        mbstring \
+        pdo_mysql \
+        zip \
     && a2enmod rewrite \
     && rm -rf /var/lib/apt/lists/*
 
-ENV APACHE_DOCUMENT_ROOT=/var/www/html/public
-
-RUN sed -ri 's!/var/www/html!\${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/sites-available/*.conf \
-    && sed -ri 's!/var/www/!\${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf /etc/apache2/conf-available/*.conf
+# O Apache deve publicar somente a pasta public do Laravel.
+RUN sed -ri 's!/var/www/html!/var/www/html/public!g' \
+        /etc/apache2/sites-available/000-default.conf \
+    && printf '%s\\n' \
+        '<Directory /var/www/html/public>' \
+        '    AllowOverride All' \
+        '    Require all granted' \
+        '</Directory>' \
+        > /etc/apache2/conf-available/laravel.conf \
+    && a2enconf laravel
 
 WORKDIR /var/www/html
+
+# Usa os arquivos já versionados, incluindo vendor/ e public/build/.
 COPY . /var/www/html
 
-RUN chown -R www-data:www-data storage bootstrap/cache
+# Permissões para os diretórios graváveis do Laravel; sem executar Artisan.
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 EXPOSE 80
+
+CMD ["apache2-foreground"]
