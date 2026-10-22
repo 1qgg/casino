@@ -7,6 +7,7 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\URL;
 use Filament\Support\Assets\Js;
 
 class AppServiceProvider extends ServiceProvider
@@ -24,6 +25,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // The application runs behind an HTTPS reverse proxy. Laravel otherwise
+        // may see the internal HTTP connection and generate HTTP signed URLs,
+        // which browsers block as mixed content (including Livewire uploads).
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
+
 //        FilamentAsset::register([
 //            Js::make('filament-tools', base_path('vendor/sebastiaankloos/filament-code-editor/dist/filament-tools.js')),
 //        ]);
