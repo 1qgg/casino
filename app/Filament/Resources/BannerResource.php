@@ -62,7 +62,13 @@ class BannerResource extends Resource
                                 ->columnSpanFull(),
                         ])->columns(2),
                         Forms\Components\FileUpload::make('image')
+                            ->label('Imagem')
                             ->image()
+                            ->acceptedFileTypes(['image/*'])
+                            ->maxSize(512000)
+                            ->disk('public')
+                            ->directory('banners')
+                            ->visibility('public')
                             ->required(),
                     ])
             ]);
